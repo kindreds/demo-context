@@ -9,10 +9,10 @@ const useCreateItem = () => {
   // GLOBAL STATE
   const { events, ...actions } = useEvents()
 
-  const handleAdd = (fileUrl) => {
+  const handleAdd = async (fileUrl) => {
     if (text.trim() === '') return
 
-    if (isEdit && itemSelected.id) {
+    if (isEdit && itemSelected.tareaId) {
       const { url } = itemSelected
       actions.editEvent({
         ...itemSelected,
@@ -25,9 +25,9 @@ const useCreateItem = () => {
 
     const payload = {
       titulo: text,
-      url: fileUrl,
-      id: +new Date()
+      link: fileUrl
     }
+
     actions.addEvent(payload)
 
     setText('')

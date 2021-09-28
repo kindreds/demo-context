@@ -10,7 +10,7 @@ const Item = ({ value, onEdit = () => {}, onDelete = () => {} }) => {
         <div>
           <a
             target="_blank"
-            href={value.url}
+            href={value.link}
             rel="noopener noreferrer"
             className="btn btn-outline-primary"
           >

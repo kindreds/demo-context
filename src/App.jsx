@@ -1,18 +1,18 @@
+import { useState } from 'react'
 import { GoPlus } from 'react-icons/go'
 
 // components
 import Item from './components/Item'
 import Empty from './components/Empty'
+import Alert from './components/Alert'
+import Spinner from './components/Spinner'
 import CheckButton from './components/CheckButton'
 import UploadButton from './components/UploadButton'
 
 // utils
+import { FiEdit } from 'react-icons/fi'
 import useCreateItem from './hooks/useCreateItem'
 import useUploadImage from './hooks/useUploadImage'
-import { useState } from 'react'
-import Spinner from './components/Spinner'
-import Alert from './components/Alert'
-import { FiEdit } from 'react-icons/fi'
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -104,7 +104,7 @@ const App = () => {
           {events.map((item) => (
             <Item
               value={item}
-              key={item.id}
+              key={item.tareaId}
               onEdit={() => actions.handleEdit(item)}
               onDelete={() => actions.handleDelete(item)}
             />

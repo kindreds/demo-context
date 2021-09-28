@@ -1,6 +1,9 @@
-import { createContext, useReducer } from 'react'
+import { createContext, useEffect, useReducer } from 'react'
 import EventsReducer from './EventsReducer'
 import { EventsActions } from './EventsActions'
+
+import { LOAD_EVENTS } from './types'
+import { getAllTareas } from '../api/tareasAPI'
 
 export const EventsContext = createContext()
 
@@ -10,6 +13,12 @@ export const initialState = {
 
 const EventsState = ({ children }) => {
   const [state, dispatch] = useReducer(EventsReducer, initialState)
+
+  useEffect(() => {
+    getAllTareas().then(({ data }) => {
+      dispatch({ type: LOAD_EVENTS, payload: data })
+    })
+  }, [])
 
   const props = {
     ...state,
