@@ -1,43 +1,63 @@
-import { useState } from 'react'
-
 import { GoPlus } from 'react-icons/go'
 
-import Item from './Item'
-import Empty from './Empty'
-import useEvents from './hooks/useEvents'
+// components
+import Item from './components/Item'
+import Empty from './components/Empty'
+import CheckButton from './components/CheckButton'
+import UploadButton from './components/UploadButton'
+
+// utils
+import useCreateItem from './hooks/useCreateItem'
+import useUploadImage from './hooks/useUploadImage'
+import { useState } from 'react'
+import Spinner from './components/Spinner'
+import Alert from './components/Alert'
+import { FiEdit } from 'react-icons/fi'
 
 const App = () => {
-  const [text, setText] = useState('')
-  const [isEdit, setIsEdit] = useState(false)
-  const [itemSelected, setItemSelected] = useState({ id: null })
+  const [isLoading, setIsLoading] = useState(false)
+  const [errors, setErrors] = useState({ ok: true })
 
-  // GLOBAL STATE
-  const { events, ...actions } = useEvents()
+  // Hook para subir imagenes
+  const { file, handleFile, uploadFile, clearFile } = useUploadImage()
 
-  const handleAdd = () => {
-    if (text.trim() === '') return
+  // Hook para crear el item
+  const { events, text, isEdit, handleAdd, ...actions } = useCreateItem()
 
-    if (isEdit && itemSelected.id) {
-      const { id } = itemSelected
-      actions.editEvent({ id, msg: text })
-      setText('')
-      return setIsEdit(false)
+  const handleCreateItem = async () => {
+    if (!file) {
+      setErrors({ ok: false, msg: 'Recuerda adjuntar la imagen' })
+      return
     }
 
-    const payload = { id: +new Date(), msg: text }
-    actions.addEvent(payload)
+    setErrors({ ok: true })
 
-    setText('')
+    setIsLoading(true)
+    // Subida del archivo: URL
+    const res = await uploadFile()
+    if (res.url) {
+      handleAdd(res.url)
+      clearFile()
+    } else {
+      console.log('Error al subir imagen')
+    }
+    setIsLoading(false)
   }
 
-  const handleDelete = (payload) => {
-    actions.deleteEvent(payload)
-  }
-
-  const handleEdit = (payload) => {
-    setIsEdit(true)
-    setText(payload.msg)
-    setItemSelected(payload)
+  const handleEditItem = async () => {
+    if (file) {
+      setIsLoading(true)
+      const res = await uploadFile()
+      if (res.url) {
+        handleAdd(res.url)
+        clearFile()
+      } else {
+        console.log('Error al subir imagen')
+      }
+      setIsLoading(false)
+    } else {
+      handleAdd()
+    }
   }
 
   return (
@@ -45,19 +65,38 @@ const App = () => {
       <div>
         <h1 className="display-1 mb-5">DEMO CONTEXT</h1>
 
+        {!errors.ok ? <Alert content={errors.msg} /> : null}
+
         <div className="d-flex align-items-center mb-4">
           <input
             type="text"
             value={text}
-            className="form-control"
-            placeholder="Agregar Item"
-            onChange={({ target: { value } }) => setText(value)}
+            placeholder="Agregar titulo"
+            className="form-control mr-4"
+            onChange={actions.handleChangeText}
             onKeyDown={({ key }) => {
-              if (key === 'Enter') handleAdd()
+              if (key === 'Enter') {
+                return isEdit ? handleEditItem() : handleCreateItem()
+              }
             }}
           />
-          <button onClick={handleAdd} className="btn btn-primary">
-            <GoPlus />
+          {file ? <CheckButton /> : <UploadButton onChangeFile={handleFile} />}
+          <button
+            disabled={isLoading}
+            className="btn btn-primary p-0 py-1 px-2"
+            onClick={isEdit ? handleEditItem : handleCreateItem}
+          >
+            {
+              /* eslint-disable */
+              isLoading ? (
+                <Spinner />
+              ) : isEdit ? (
+                <FiEdit size={25} />
+              ) : (
+                <GoPlus size={25} />
+              )
+              /* eslint-enable */
+            }
           </button>
         </div>
 
@@ -66,8 +105,8 @@ const App = () => {
             <Item
               value={item}
               key={item.id}
-              onEdit={() => handleEdit(item)}
-              onDelete={() => handleDelete(item)}
+              onEdit={() => actions.handleEdit(item)}
+              onDelete={() => actions.handleDelete(item)}
             />
           ))}
         </ul>
