@@ -2,10 +2,6 @@ import { useState } from 'react'
 import S3 from 'react-aws-s3'
 import { v4 as uuidv4 } from 'uuid'
 
-import { sleep } from '../utils/sleep'
-
-const url = ''
-
 const REGION = process.env.REACT_APP_REGION ?? ''
 const S3_BUCKET = process.env.REACT_APP_S3_BUCKET ?? ''
 const ACCESS_KEY = process.env.REACT_APP_ACCESS_KEY ?? ''
@@ -13,7 +9,7 @@ const SECRET_ACCESS_KEY = process.env.REACT_APP_SECRET_ACCESS_KEY ?? ''
 
 const config = {
   bucketName: S3_BUCKET,
-  dirName: 's3://yarmo-bucket',
+  dirName: 'images',
   region: REGION,
   accessKeyId: ACCESS_KEY,
   secretAccessKey: SECRET_ACCESS_KEY
@@ -29,20 +25,20 @@ const useUploadImage = () => {
   const handleFile = ({ target: { validity, files } }) => {
     if (validity && files.length !== 0) {
       const file = files[0]
-
-      const newFileName = uuidv4()
-
-      ReactS3Client.uploadFile(file, newFileName)
-        .then((data) => console.log(data))
-        .catch((err) => console.error(err))
+      setFile(file)
     }
   }
 
   const clearFile = () => setFile(null)
 
   const uploadFile = async () => {
-    await sleep(3000)
-    return { url }
+    // await sleep(3000)
+    const newFileName = uuidv4()
+    const res = await ReactS3Client.uploadFile(file, newFileName)
+    if (!res.location) {
+      console.log('ERROR AL SUBIR IMAGEN')
+    }
+    return { url: res.location }
   }
 
   return { file, handleFile, uploadFile, clearFile }

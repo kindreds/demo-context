@@ -17,7 +17,7 @@ const useCreateItem = () => {
       actions.editEvent({
         ...itemSelected,
         titulo: text,
-        url: fileUrl ?? url
+        link: !fileUrl ? url : fileUrl
       })
       setText('')
       return setIsEdit(false)
