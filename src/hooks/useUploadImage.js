@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import S3 from 'react-aws-s3'
+import { v4 as uuidv4 } from 'uuid'
+
 import { sleep } from '../utils/sleep'
 
 const url = ''
@@ -8,17 +11,30 @@ const S3_BUCKET = process.env.REACT_APP_S3_BUCKET ?? ''
 const ACCESS_KEY = process.env.REACT_APP_ACCESS_KEY ?? ''
 const SECRET_ACCESS_KEY = process.env.REACT_APP_SECRET_ACCESS_KEY ?? ''
 
-const useUploadImage = () => {
-  const [file, setFile] = useState(null)
-  // const [progress, setProgress] = useState(0)
+const config = {
+  bucketName: S3_BUCKET,
+  dirName: 's3://yarmo-bucket',
+  region: REGION,
+  accessKeyId: ACCESS_KEY,
+  secretAccessKey: SECRET_ACCESS_KEY
+  // s3Url: 'https:/your-custom-s3-url.com/', /* optional */
+}
 
-  console.log({ REGION, S3_BUCKET, ACCESS_KEY, SECRET_ACCESS_KEY })
+const ReactS3Client = new S3(config)
+
+const useUploadImage = () => {
+  // const [progress, setProgress] = useState(0)
+  const [file, setFile] = useState(null)
 
   const handleFile = ({ target: { validity, files } }) => {
     if (validity && files.length !== 0) {
       const file = files[0]
 
-      console.log(file)
+      const newFileName = uuidv4()
+
+      ReactS3Client.uploadFile(file, newFileName)
+        .then((data) => console.log(data))
+        .catch((err) => console.error(err))
     }
   }
 
